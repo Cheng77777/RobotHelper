@@ -3,10 +3,11 @@ package cn.xjiangwei.RobotHelper.Tools;
 import android.app.Instrumentation;
 import android.os.SystemClock;
 import android.view.MotionEvent;
+import static android.os.SystemClock.sleep;
 
 
 public class Robot {
-    private static Instrumentation mInst = null;
+    private static Instrumentation mInst = new Instrumentation();
 
 
     public static void tap(final int x, final int y) {
@@ -14,51 +15,19 @@ public class Robot {
             return;
         }
 
-        if (Robot.mInst == null) {
-            mInst = new Instrumentation();
-
-        }
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, x, y, 0));    //x,y 即是事件的坐标
-                mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, x, y, 0));
-            }
-        };
-
-        thread.start();
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, x, y, 0));    //x,y 即是事件的坐标
+        mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, x, y, 0));
 
     }
 
 
     public static void tap(final int x, final int y, final long delay) {
-        if (Robot.mInst == null) {
-            mInst = new Instrumentation();
+        if (x < 0 || y < 0) {
+            return;
         }
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, x, y, 0));    //x,y 即是事件的坐标
-                try {
-                    sleep(delay);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, x, y, 0));
-            }
-        };
-
-        thread.start();
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, x, y, 0));    //x,y 即是事件的坐标
+        sleep(delay);
+        mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, x, y, 0));
     }
 
 
@@ -78,40 +47,32 @@ public class Robot {
         float dy = (y2 - y1) / steps;
         down(x1, y1);
         for (int step = 0; step < steps; step++) {
-            SystemClock.sleep(interval);
+            sleep(interval);
             moveTo(x1 + step * dx, y1 + step * dy, 0);
         }
-        SystemClock.sleep(interval);
+        sleep(interval);
         up(x2, y2);
     }
 
 
     private static void down(float x, float y) {
-        if (Robot.mInst == null) {
-            mInst = new Instrumentation();
-        }
         mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, x, y, 0));
     }
 
 
     private static void up(float x, float y) {
-        if (Robot.mInst == null) {
-            mInst = new Instrumentation();
-        }
         mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, x, y, 0));
     }
 
 
     private static void moveTo(float x, float y, int contactId) {
-        if (Robot.mInst == null) {
-            mInst = new Instrumentation();
-        }
         mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_MOVE, x, y, 0));
     }
 
 
     /**
      * TODO 待实现
+     *
      * @param str
      */
     public static void input(String str) {
