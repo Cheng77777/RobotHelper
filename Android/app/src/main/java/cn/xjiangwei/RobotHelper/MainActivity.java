@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -124,13 +125,16 @@ public class MainActivity extends AppCompatActivity {
 
     public void openLog(View view) {
 
-        String file = Environment.getExternalStorageDirectory().toString() + "/RobotHelper.log";
 
+        String filePath = Environment.getExternalStorageDirectory().toString() + "/RobotHelper.log";
+        File file = new File(filePath);
+        Uri fileURI = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", file);
         try {
             Intent intent = new Intent();
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.setAction(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(new File(file)), "text/plain");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setDataAndType(fileURI, "text/plain");
             startActivity(intent);
             Intent.createChooser(intent, "请选择对应的软件打开该附件！");
         } catch (ActivityNotFoundException e) {
