@@ -132,15 +132,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     @Override
     protected void onResume() {
         super.onResume();
         updateStatus();
-    }
-
-    private boolean checkXposedHook() {
-        return false;
     }
 
 
@@ -183,8 +178,8 @@ public class MainActivity extends AppCompatActivity {
         TextView asStatus = (TextView) findViewById(R.id.accessibility_status);
         TextView hsStatus = (TextView) findViewById(R.id.httpserver_status);
 
-        xpStatus.setText(checkXposedHook() ? "Xposed状态：已加载" : "Xposed状态：未加载");
-        asStatus.setText(Accessibility.DOM == null ? "Accessibility状态：未加载" : "Accessibility状态：已加载");
+        xpStatus.setText(((MainApplication) this.getApplication()).checkXposedHook() ? "Xposed状态：已加载" : "Xposed状态：未加载");
+        asStatus.setText(((MainApplication) this.getApplication()).checkAccessibilityService() ? "Accessibility状态：未加载" : "Accessibility状态：已加载");
         hsStatus.setText((RunTime.httpServer != null && RunTime.httpServer.runing) ? "HttpServer状态：已开启" : "HttpServer状态：未开启");
     }
 
