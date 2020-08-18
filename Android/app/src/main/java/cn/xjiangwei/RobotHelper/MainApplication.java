@@ -3,6 +3,7 @@ package cn.xjiangwei.RobotHelper;
 import android.app.Application;
 
 import cn.xjiangwei.RobotHelper.Service.Accessibility;
+import cn.xjiangwei.RobotHelper.Service.RunTime;
 
 
 public class MainApplication extends Application {
@@ -36,7 +37,10 @@ public class MainApplication extends Application {
     }
 
     public boolean checkAccessibilityService() {
-        return Accessibility.DOM == null;
+        return Accessibility.DOM != null;
     }
 
+    public boolean checkHttpServer() {
+        return RunTime.httpServer != null && RunTime.httpServer.runing;
+    }
 }

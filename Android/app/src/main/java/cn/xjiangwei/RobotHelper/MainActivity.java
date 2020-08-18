@@ -3,8 +3,6 @@ package cn.xjiangwei.RobotHelper;
 import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
@@ -15,34 +13,19 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.github.dfqin.grantor.PermissionListener;
 import com.github.dfqin.grantor.PermissionsUtil;
-import com.googlecode.tesseract.android.TessBaseAPI;
-import com.lahm.library.EasyProtectorLib;
-import com.lahm.library.EmulatorCheckCallback;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
-import cn.xjiangwei.RobotHelper.Accessibility.HttpServer;
-import cn.xjiangwei.RobotHelper.Service.Accessibility;
 import cn.xjiangwei.RobotHelper.Service.RunTime;
 import cn.xjiangwei.RobotHelper.Tools.MLog;
-import cn.xjiangwei.RobotHelper.Tools.Robot;
-import cn.xjiangwei.RobotHelper.Tools.ScreenCaptureUtil;
 import cn.xjiangwei.RobotHelper.Tools.ScreenCaptureUtilByMediaPro;
 import cn.xjiangwei.RobotHelper.Tools.TessactOcr;
 import cn.xjiangwei.RobotHelper.Tools.Toast;
@@ -178,9 +161,10 @@ public class MainActivity extends AppCompatActivity {
         TextView asStatus = (TextView) findViewById(R.id.accessibility_status);
         TextView hsStatus = (TextView) findViewById(R.id.httpserver_status);
 
-        xpStatus.setText(((MainApplication) this.getApplication()).checkXposedHook() ? "Xposed状态：已加载" : "Xposed状态：未加载");
-        asStatus.setText(((MainApplication) this.getApplication()).checkAccessibilityService() ? "Accessibility状态：未加载" : "Accessibility状态：已加载");
-        hsStatus.setText((RunTime.httpServer != null && RunTime.httpServer.runing) ? "HttpServer状态：已开启" : "HttpServer状态：未开启");
+        xpStatus.setText(mainApplication.checkXposedHook() ? "Xposed状态：已加载" : "Xposed状态：未加载");
+        asStatus.setText(mainApplication.checkAccessibilityService() ? "Accessibility状态：已加载" : "Accessibility状态：未加载");
+        hsStatus.setText(mainApplication.checkHttpServer() ? "HttpServer状态：已开启" : "HttpServer状态：未开启");
     }
+
 
 }
