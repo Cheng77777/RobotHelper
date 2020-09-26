@@ -12,6 +12,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Random;
 
 import cn.xjiangwei.RobotHelper.MainApplication;
 import cn.xjiangwei.RobotHelper.Tools.Image;
@@ -24,66 +25,82 @@ import cn.xjiangwei.RobotHelper.Tools.Toast;
 
 import static android.os.SystemClock.sleep;
 
-public class Main {
+public class Main implements Runnable {
+    private Random ran = new Random();
     private static final String SD_PATH = Environment.getExternalStorageDirectory().getPath();
-
+    private String start_image_file = "start.png";
+    private String continue_image_file = "continue.png";
+    private boolean run = true;
     /**
      * 在这个函数里面写你的业务逻辑
      */
-    public void start() {
-        sleep(5000); //点击开始后等待5秒后再执行，因为状态栏收起有动画时间，建议保留这行代码
+    @Override
+    public void run(){
+
+//        MLog.info("Initialization", "Initializing");
+        sleep(1000); //点击开始后等待5秒后再执行，因为状态栏收起有动画时间，建议保留这行代码
         MLog.setDebug(true);
-        //Robot.setExecType(Robot.ExecTypeXposed);         //使用xposed权限执行模拟操作，建议优先使用此方式
-        //Robot.setExecType(Robot.ExecTypeAccessibillty);  //使用安卓无障碍接口执行模拟操作
-        //Robot.setExecType(Robot.ExecTypeROOT)            //使用root权限执行模拟操作（实验阶段，仅在oneplus 7pro测试过，欢迎提bug）
 
-        /****************************  模板匹配demo  *******************************/
-        InputStream is = null;
-        try {
-            is = MainApplication.getInstance().getAssets().open("ImgMatch.png");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Bitmap bitmap = BitmapFactory.decodeStream(is);
-        //在当前屏幕中查找模板图片
-        Point point = Image.matchTemplate(ScreenCaptureUtil.getScreenCap(), bitmap, 0.1);
-        MLog.info("找到模板", point.toString());
-        // 点击找到的这个图
-        Robot.tap(point);
+//        Robot.setExecType(Robot.ExecTypeXposed);         //使用xposed权限执行模拟操作，建议优先使用此方式
+//        Robot.setExecType(Robot.ExecTypeAccessibillty);  //使用安卓无障碍接口执行模拟操作
+        Robot.setExecType(Robot.ExecTypeROOT);           //使用root权限执行模拟操作（实验阶段，仅在oneplus 7pro测试过，欢迎提bug）
 
+//        MLog.info("Initialization", "robot loaded");
 
-        /**************************** 文字识别demo  **********************************/
-        try {
-            //识别素材文件中的ocrTest.png图片中的文字
-            is = MainApplication.getInstance().getAssets().open("ocrTest.png");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        bitmap = BitmapFactory.decodeStream(is);
-
-        String res = TessactOcr.img2string(ScreenCaptureUtil.getScreenCap(0, 0, 200, 30), "chi_sim", "", "");
-        MLog.info("文字识别结果：" + res);
-
-
-        /*****************************  特征点找图  ************************************/
-        //当前屏幕中查找chrome图标（特征点是3120X1440分辨率手机制作）
-        point = Image.findPointByMulColor(ScreenCaptureUtil.getScreenCap(), "434FD7,65|0|414DDB,90|55|46CDFF,5|86|5FA119");
-        //点击chrome图标
-        Robot.tap(point);
-
-
-        /*****************************  双指缩放操作  ************************************/
-
-
-//        Robot.pinchOpen(100);  // 目前仅在xposed模式中实现了该方法，distance值为0到100
-//        Robot.pinchClose(100);  // 目前仅在xposed模式中实现了该方法，
-
-
-        /***** 提示  *****/
-        Toast.show("运行结束！");
-        //声音提示
         Toast.notice();
+        Toast.show("启动成功");
+        /****************************  模板匹配demo  *******************************/
+        InputStream input = null;
+        while (run){
+            sleep(1000);
+            try {
+                input = MainApplication.getInstance().getAssets().open(start_image_file);
+                Bitmap start_bitmap = BitmapFactory.decodeStream(input);
+                //在当前屏幕中查找模板图片
+                Point point = Image.matchTemplate(ScreenCaptureUtil.getScreenCap(), start_bitmap, 0.6);
+                if(point == null) {
+                    input = MainApplication.getInstance().getAssets().open(continue_image_file);
+                    Bitmap continue_bitmap = BitmapFactory.decodeStream(input);
+                    point = Image.matchTemplate(ScreenCaptureUtil.getScreenCap(), continue_bitmap, 0.6);
+                    if (point != null) {
+                        point.setX(point.getX() + ran.nextInt(800));
+                        point.setY(1080 - (point.getY() + ran.nextInt(400)));
+                        for(int i = 0; i < ran.nextInt(5);i++){
+                            point.setX(point.getX() + ran.nextInt(20)-10);
+                            point.setY(point.getY() + ran.nextInt(20)-10);
+//                            MLog.info("点击继续", point.toString());
+                            Toast.show("继续" + point.toString());
+                            Robot.tap(point);
+                            sleep(ran.nextInt(200)+300);
+                        }
+                    }
+                    continue;
+                }
+                point.setX(point.getX() + ran.nextInt(150));
+                point.setY(1080 - (point.getY() + ran.nextInt(150)));
+                for(int i = 0; i < ran.nextInt(5);i++){
+                    point.setX(point.getX() + ran.nextInt(20)-10);
+                    point.setY(point.getY() + ran.nextInt(20)-10);
+//                    MLog.info("点击开始", "开始： "+ point.toString());
+                    Toast.show("开始"+ point.toString());
+                    Robot.tap(point);
+                    sleep(ran.nextInt(200)+300);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
+//        MLog.info("结束", "结束");
+        Toast.show("停止脚本！");
+        Toast.notice();
     }
 
+    public void SetRun(Boolean run){
+        this.run = run;
+    }
+
+    public Boolean isRunning(){
+        return run;
+    }
 }

@@ -425,7 +425,7 @@ public class Image {
         Core.MinMaxLocResult minMaxResult = Core.minMaxLoc(result);
         org.opencv.core.Point maxloc = minMaxResult.maxLoc;
         if (minMaxResult.maxVal < threshold) {
-            return new Point(-1, -1);
+            return null;
         }
         org.opencv.core.Point minloc = minMaxResult.minLoc;
         org.opencv.core.Point matchloc = null;

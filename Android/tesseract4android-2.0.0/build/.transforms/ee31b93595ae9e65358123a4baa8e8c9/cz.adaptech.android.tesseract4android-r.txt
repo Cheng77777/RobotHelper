@@ -1,0 +1,2 @@
+cz.adaptech.android.tesseract4android
+string app_name

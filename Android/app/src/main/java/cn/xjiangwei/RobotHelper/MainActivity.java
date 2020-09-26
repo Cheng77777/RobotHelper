@@ -122,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
         updateStatus();
     }
 
-
     public void openLog(View view) {
 
 

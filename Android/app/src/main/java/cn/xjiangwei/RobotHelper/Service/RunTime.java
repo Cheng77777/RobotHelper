@@ -39,6 +39,9 @@ public class RunTime extends Service {
 
     public static HttpServer httpServer;
 
+    private Thread thread = null;
+    private Main main = null;
+
     public RunTime() {
     }
 
@@ -120,10 +123,6 @@ public class RunTime extends Service {
      * 广播监听按钮点击事件
      */
     public class ButtonBroadcastReceiver extends BroadcastReceiver {
-
-        private Thread thread;
-
-
         public void collapseStatusBar(Context context) {
             try {
                 Object statusBarManager = context.getSystemService("statusbar");
@@ -147,32 +146,39 @@ public class RunTime extends Service {
                 switch (buttonId) {
                     case START:
                         collapseStatusBar(context);
-                        if (thread == null || !thread.isAlive()) {
-                            thread = new Thread() {
-                                @Override
-                                public void run() {
-                                    new Main().start();
-                                }
-                            };
+                        if (main == null) {
+                            main = new Main();
+                            thread = new Thread(main);
                             thread.start();
-                        } else {
-                            MLog.info("运行中！");
+                        }
+                        else {
+                            if(main.isRunning()){
+                                Handler handler = new Handler(Looper.getMainLooper());
+                                handler.post(new Runnable() {
+                                    public void run() {
+                                        Toast.makeText(getApplicationContext(), "运行中！", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                            else{
+                                main = new Main();
+                                thread = new Thread(main);
+                                thread.start();
+                            }
+                        }
+                        break;
+                    case END:
+                        if(main != null){
+                            main.SetRun(false);
+                        }
+                        else{
                             Handler handler = new Handler(Looper.getMainLooper());
                             handler.post(new Runnable() {
                                 public void run() {
-                                    Toast.makeText(getApplicationContext(), "运行中！", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(), "未运行", Toast.LENGTH_LONG).show();
                                 }
                             });
                         }
-
-                        break;
-                    case END:
-                        Handler handler = new Handler(Looper.getMainLooper());
-                        handler.post(new Runnable() {
-                            public void run() {
-                                Toast.makeText(getApplicationContext(), "还未实现暂停功能。", Toast.LENGTH_LONG).show();
-                            }
-                        });
 
 
                         break;
@@ -183,7 +189,6 @@ public class RunTime extends Service {
                             httpServer.start();
                         }
                         cn.xjiangwei.RobotHelper.Tools.Toast.show("HttpServer Start!");
-
                         break;
                     case END_HTTPSERVER:
                         httpServer.stop();

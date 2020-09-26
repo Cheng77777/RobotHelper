@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Random;
 
 import cn.xjiangwei.RobotHelper.MainApplication;
 import cn.xjiangwei.RobotHelper.Tools.FileUtils;
@@ -860,6 +861,7 @@ public class RootInput implements Input {
     public static final int SND_MAX = 0x07;
     public static final int SND_CNT = (SND_MAX + 1);
 
+    private static Random ran = new Random();
 
     public static RootInput getInstance() {
         if (instance == null) {
@@ -998,9 +1000,8 @@ public class RootInput implements Input {
 
     private void exec(int type, int code, int value) {
         try {
-            executeCommands(mProcess, new String[]{
-                    type + " " + code + " " + value,
-            });
+            String[] command = new String[]{type + " " + code + " " + value,};
+            executeCommands(mProcess, command);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -1008,7 +1009,7 @@ public class RootInput implements Input {
 
     @Override
     public void tap(int x, int y) {
-        tap(x, y, 50);
+        tap(x, y, ran.nextInt(200)+300);
     }
 
     @Override
@@ -1060,18 +1061,47 @@ public class RootInput implements Input {
 
 
     private void down(int x, int y) {
-        exec(EV_ABS, ABS_MT_TRACKING_ID, 0x000021e7);
         exec(EV_KEY, BTN_TOUCH, DOWN);
-        exec(EV_ABS, ABS_MT_WIDTH_MAJOR, 0x00000009);
-        exec(EV_ABS, ABS_MT_POSITION_X, x);
-        exec(EV_ABS, ABS_MT_POSITION_Y, y);
+        exec(EV_ABS, ABS_MT_TRACKING_ID, 0x00001fc5);
+        exec(EV_ABS, ABS_MT_POSITION_X, y);
+        exec(EV_ABS, ABS_MT_POSITION_Y, x);
+        exec(EV_ABS, ABS_MT_TOUCH_MAJOR, 0x00000030);
+        exec(EV_ABS,ABS_MT_PRESSURE,0x00000030);
         exec(EV_SYN, SYN_REPORT, 0x00000000);
+        if(ran.nextBoolean()){
+            exec(EV_ABS, ABS_MT_POSITION_X, y+1+ran.nextInt(5));
+            exec(EV_ABS, ABS_MT_POSITION_Y, x+1+ran.nextInt(5));
+            exec(EV_ABS, ABS_MT_TOUCH_MAJOR, 0x00000032);
+            exec(EV_ABS,ABS_MT_PRESSURE,0x00000032);
+            exec(EV_SYN, SYN_REPORT, 0x00000000);
+            if(ran.nextBoolean()){
+                exec(EV_ABS, ABS_MT_POSITION_X, y-1-ran.nextInt(5));
+                exec(EV_ABS, ABS_MT_POSITION_Y, x-1-ran.nextInt(5));
+                exec(EV_ABS, ABS_MT_TOUCH_MAJOR, 0x00000034);
+                exec(EV_ABS,ABS_MT_PRESSURE,0x00000034);
+                exec(EV_SYN, SYN_REPORT, 0x00000000);
+                if(ran.nextBoolean()){
+                    exec(EV_ABS, ABS_MT_POSITION_X, y-1-ran.nextInt(5));
+                    exec(EV_ABS, ABS_MT_POSITION_Y, x-1-ran.nextInt(5));
+                    exec(EV_ABS, ABS_MT_TOUCH_MAJOR, 0x00000038);
+                    exec(EV_ABS,ABS_MT_PRESSURE,0x00000038);
+                    exec(EV_SYN, SYN_REPORT, 0x00000000);
+                    if(ran.nextBoolean()){
+                        exec(EV_ABS, ABS_MT_POSITION_X, y-1-ran.nextInt(5));
+                        exec(EV_ABS, ABS_MT_POSITION_Y, x-1-ran.nextInt(5));
+                        exec(EV_ABS, ABS_MT_TOUCH_MAJOR, 0x00000033);
+                        exec(EV_ABS,ABS_MT_PRESSURE,0x00000034);
+                        exec(EV_SYN, SYN_REPORT, 0x00000000);
+                    }
+                }
+            }
+        }
     }
 
 
     private void up() {
-        exec(EV_ABS, ABS_MT_TRACKING_ID, 0xffffffff);
         exec(EV_KEY, BTN_TOUCH, UP);
+        exec(EV_ABS, ABS_MT_TRACKING_ID, 0xffffffff);
         exec(EV_SYN, SYN_REPORT, 0x00000000);
     }
 
