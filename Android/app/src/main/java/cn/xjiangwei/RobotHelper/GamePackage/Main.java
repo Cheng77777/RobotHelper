@@ -4,14 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
 
-import org.opencv.android.Utils;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
-
-import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.util.List;
 import java.util.Random;
 
 import cn.xjiangwei.RobotHelper.MainApplication;
@@ -20,17 +15,28 @@ import cn.xjiangwei.RobotHelper.Tools.MLog;
 import cn.xjiangwei.RobotHelper.Tools.Point;
 import cn.xjiangwei.RobotHelper.Tools.Robot;
 import cn.xjiangwei.RobotHelper.Tools.ScreenCaptureUtil;
-import cn.xjiangwei.RobotHelper.Tools.TessactOcr;
 import cn.xjiangwei.RobotHelper.Tools.Toast;
 
 import static android.os.SystemClock.sleep;
 
 public class Main implements Runnable {
-    private Random ran = new Random();
+
     private static final String SD_PATH = Environment.getExternalStorageDirectory().getPath();
-    private String start_image_file = "start.png";
-    private String continue_image_file = "continue.png";
+    private static final String start_image_file_00 = "start_00.png";
+    private static final String start_image_file_01 = "start_01.png";
+    private static final String continue_image_file_00 = "continue_00.png";
+    private static final String continue_image_file_01 = "continue_01.png";
+    private static final ImageData[] imageData = {
+            new ImageData(start_image_file_00,150,150,"点击开始"),
+            new ImageData(start_image_file_01,150,150,"点击开始"),
+            new ImageData(continue_image_file_00,800,400,"点击继续"),
+            new ImageData(continue_image_file_01,800,400,"点击继续")
+    };
+
+    private Random ran = new Random();
+    private InputStream input = null;
     private boolean run = true;
+
     /**
      * 在这个函数里面写你的业务逻辑
      */
@@ -49,51 +55,48 @@ public class Main implements Runnable {
 
         Toast.notice();
         Toast.show("启动成功");
-        /****************************  模板匹配demo  *******************************/
-        InputStream input = null;
+
         while (run){
             sleep(1000);
-            try {
-                input = MainApplication.getInstance().getAssets().open(start_image_file);
-                Bitmap start_bitmap = BitmapFactory.decodeStream(input);
-                //在当前屏幕中查找模板图片
-                Point point = Image.matchTemplate(ScreenCaptureUtil.getScreenCap(), start_bitmap, 0.6);
-                if(point == null) {
-                    input = MainApplication.getInstance().getAssets().open(continue_image_file);
-                    Bitmap continue_bitmap = BitmapFactory.decodeStream(input);
-                    point = Image.matchTemplate(ScreenCaptureUtil.getScreenCap(), continue_bitmap, 0.6);
-                    if (point != null) {
-                        point.setX(point.getX() + ran.nextInt(800));
-                        point.setY(1080 - (point.getY() + ran.nextInt(400)));
-                        for(int i = 0; i < ran.nextInt(5);i++){
-                            point.setX(point.getX() + ran.nextInt(20)-10);
-                            point.setY(point.getY() + ran.nextInt(20)-10);
-//                            MLog.info("点击继续", point.toString());
-                            Toast.show("继续" + point.toString());
-                            Robot.tap(point);
-                            sleep(ran.nextInt(200)+300);
-                        }
-                    }
-                    continue;
+            for (ImageData i : imageData) {
+                if(FindImageAndTap(i.filename,0.6,5,i.rangeX,i.rangeY,i.typeMessage)){
+                    break;
                 }
-                point.setX(point.getX() + ran.nextInt(150));
-                point.setY(1080 - (point.getY() + ran.nextInt(150)));
-                for(int i = 0; i < ran.nextInt(5);i++){
-                    point.setX(point.getX() + ran.nextInt(20)-10);
-                    point.setY(point.getY() + ran.nextInt(20)-10);
-//                    MLog.info("点击开始", "开始： "+ point.toString());
-                    Toast.show("开始"+ point.toString());
-                    Robot.tap(point);
-                    sleep(ran.nextInt(200)+300);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
-
-//        MLog.info("结束", "结束");
         Toast.show("停止脚本！");
         Toast.notice();
+    }
+
+    private boolean FindImageAndTap(String filename, double threshold, int randomNum, int rangeX, int rangeY, String message){
+        Point point = GetImagePoint(filename,threshold);
+        if(point != null){
+            Tap(point,randomNum,rangeX,rangeY,message);
+            return true;
+        }
+        return false;
+    }
+
+    private void Tap(Point point, int randomNum, int rangeX, int rangeY, String message){
+        point.setX(point.getX() + ran.nextInt(rangeX));
+        point.setY(1080 - (point.getY() + ran.nextInt(rangeY)));
+        for(int i = 0; i < ran.nextInt(randomNum);i++){
+            point.setX(point.getX() + ran.nextInt(20)-10);
+            point.setY(point.getY() + ran.nextInt(20)-10);
+            Toast.show(message+ point.toString());
+            Robot.tap(point);
+            sleep(ran.nextInt(200)+300);
+        }
+    }
+
+    private Point GetImagePoint(String filename, double threshold){
+        try {
+            input = MainApplication.getInstance().getAssets().open(filename);
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+            return Image.matchTemplate(ScreenCaptureUtil.getScreenCap(), bitmap, threshold);
+        }catch (Exception e){
+            return null;
+        }
     }
 
     public void SetRun(Boolean run){
@@ -102,5 +105,19 @@ public class Main implements Runnable {
 
     public Boolean isRunning(){
         return run;
+    }
+}
+
+class ImageData{
+    public String filename;
+    public int rangeX;
+    public int rangeY;
+    public String typeMessage;
+
+    public ImageData(String filename,int rangeX,int rangeY,String typeMessage){
+        this.filename = filename;
+        this.rangeX = rangeX;
+        this.rangeY = rangeY;
+        this.typeMessage = typeMessage;
     }
 }
