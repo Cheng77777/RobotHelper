@@ -1009,7 +1009,7 @@ public class RootInput implements Input {
 
     @Override
     public void tap(int x, int y) {
-        tap(x, y, ran.nextInt(200)+300);
+        tap(x, y, ran.nextInt(30)+20);
     }
 
     @Override

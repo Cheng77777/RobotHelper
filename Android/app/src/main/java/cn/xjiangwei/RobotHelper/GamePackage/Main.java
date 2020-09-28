@@ -23,14 +23,14 @@ public class Main implements Runnable {
 
     private static final String SD_PATH = Environment.getExternalStorageDirectory().getPath();
     private static final String start_image_file_00 = "start_00.png";
-    private static final String start_image_file_01 = "start_01.png";
     private static final String continue_image_file_00 = "continue_00.png";
     private static final String continue_image_file_01 = "continue_01.png";
+    private static final String continue_image_file_02 = "continue_02.png";
     private static final ImageData[] imageData = {
             new ImageData(start_image_file_00,150,150,"点击开始"),
-            new ImageData(start_image_file_01,150,150,"点击开始"),
-            new ImageData(continue_image_file_00,800,400,"点击继续"),
-            new ImageData(continue_image_file_01,800,400,"点击继续")
+            new ImageData(continue_image_file_00,500,250,"点击继续"),
+            new ImageData(continue_image_file_01,500,250,"点击继续"),
+            new ImageData(continue_image_file_02,500,250,"点击继续")
     };
 
     private Random ran = new Random();
@@ -47,9 +47,9 @@ public class Main implements Runnable {
         sleep(1000); //点击开始后等待5秒后再执行，因为状态栏收起有动画时间，建议保留这行代码
         MLog.setDebug(true);
 
-//        Robot.setExecType(Robot.ExecTypeXposed);         //使用xposed权限执行模拟操作，建议优先使用此方式
+        Robot.setExecType(Robot.ExecTypeXposed);         //使用xposed权限执行模拟操作，建议优先使用此方式
 //        Robot.setExecType(Robot.ExecTypeAccessibillty);  //使用安卓无障碍接口执行模拟操作
-        Robot.setExecType(Robot.ExecTypeROOT);           //使用root权限执行模拟操作（实验阶段，仅在oneplus 7pro测试过，欢迎提bug）
+//        Robot.setExecType(Robot.ExecTypeROOT);           //使用root权限执行模拟操作（实验阶段，仅在oneplus 7pro测试过，欢迎提bug）
 
 //        MLog.info("Initialization", "robot loaded");
 
@@ -57,9 +57,9 @@ public class Main implements Runnable {
         Toast.show("启动成功");
 
         while (run){
-            sleep(1000);
+            sleep(100);
             for (ImageData i : imageData) {
-                if(FindImageAndTap(i.filename,0.6,5,i.rangeX,i.rangeY,i.typeMessage)){
+                if(FindImageAndTap(i.filename,0.6,i.rangeX,i.rangeY,i.typeMessage,false)){
                     break;
                 }
             }
@@ -68,24 +68,26 @@ public class Main implements Runnable {
         Toast.notice();
     }
 
-    private boolean FindImageAndTap(String filename, double threshold, int randomNum, int rangeX, int rangeY, String message){
+    private boolean FindImageAndTap(String filename, double threshold, int rangeX, int rangeY, String message,boolean showMessage){
         Point point = GetImagePoint(filename,threshold);
         if(point != null){
-            Tap(point,randomNum,rangeX,rangeY,message);
+            Tap(point,rangeX,rangeY,message,showMessage);
             return true;
         }
         return false;
     }
 
-    private void Tap(Point point, int randomNum, int rangeX, int rangeY, String message){
+    private void Tap(Point point, int rangeX, int rangeY, String message, boolean showMessage){
         point.setX(point.getX() + ran.nextInt(rangeX));
-        point.setY(1080 - (point.getY() + ran.nextInt(rangeY)));
-        for(int i = 0; i < ran.nextInt(randomNum);i++){
+        point.setY(point.getY() + ran.nextInt(rangeY));
+        Robot.tap(point);
+        if(showMessage){
+            Toast.show(message+ point.toString());
+        }
+        if(ran.nextBoolean()){
             point.setX(point.getX() + ran.nextInt(20)-10);
             point.setY(point.getY() + ran.nextInt(20)-10);
-            Toast.show(message+ point.toString());
             Robot.tap(point);
-            sleep(ran.nextInt(200)+300);
         }
     }
 
